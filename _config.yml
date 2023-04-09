@@ -17,10 +17,10 @@ minimal_mistakes_skin    : "dark" # "air", "aqua", "contrast", "dark", "dirt", "
 # Site Settings
 future                   : true
 locale                   : "en-US"
-title                    : "Site Title"
+title                    : "pupulinlin"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
-name                     : "Your Name"
+name                     : "Dogun Kim"
 description              : "An amazing website."
 url                      : "https://pupulinlin.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
