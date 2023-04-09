@@ -88,16 +88,31 @@ author_profile: false
 # 2. 데이터 불러오기
 
 
-먼저 필요한 라이브러리인 `numpy`와 `pandas`를 import하고, 데이터(train.csv, test.csv) 파일을 코드와 같은 디렉토리에 다운을 받고 pd.read_csv 를 이용해서 불러오자.
+
+```python
+from pathlib import Path
+import pandas as pd
+import tarfile
+import urllib.request
+
+def load_titanic_data():
+    tarball_path = Path("datasets/titanic.tgz")
+    if not tarball_path.is_file():
+        Path("datasets").mkdir(parents=True, exist_ok=True)
+        url = "https://github.com/ageron/data/raw/main/titanic.tgz"
+        urllib.request.urlretrieve(url, tarball_path)
+        with tarfile.open(tarball_path) as titanic_tarball:
+            titanic_tarball.extractall(path="datasets")
+    return [pd.read_csv(Path("datasets/titanic") / filename)
+            for filename in ("train.csv", "test.csv")]
+```
+
+데이터를 가져와서 로드해 본다.
 
 
 
 ```python
-import pandas as pd
-import numpy as np
-
-train = pd.read_csv('/kaggle/input/titanic/train.csv')
-test = pd.read_csv('/kaggle/input/titanic/test.csv')
+train, test = load_titanic_data()
 ```
 
 적재한 훈련데이터를 확인하기 위해 head() 메서드를 이용하여 앞의 5열을 살펴본다.
@@ -108,6 +123,28 @@ test = pd.read_csv('/kaggle/input/titanic/test.csv')
 train.head()
 ```
 
+<pre>
+   PassengerId  Survived  Pclass  \
+0            1         0       3   
+1            2         1       1   
+2            3         1       3   
+3            4         1       1   
+4            5         0       3   
+
+                                                Name     Sex   Age  SibSp  \
+0                            Braund, Mr. Owen Harris    male  22.0      1   
+1  Cumings, Mrs. John Bradley (Florence Briggs Th...  female  38.0      1   
+2                             Heikkinen, Miss. Laina  female  26.0      0   
+3       Futrelle, Mrs. Jacques Heath (Lily May Peel)  female  35.0      1   
+4                           Allen, Mr. William Henry    male  35.0      0   
+
+   Parch            Ticket     Fare Cabin Embarked  
+0      0         A/5 21171   7.2500   NaN        S  
+1      0          PC 17599  71.2833   C85        C  
+2      0  STON/O2. 3101282   7.9250   NaN        S  
+3      0            113803  53.1000  C123        S  
+4      0            373450   8.0500   NaN        S  
+</pre>
 # 3. 데이터 분석
 
 
@@ -138,6 +175,51 @@ print('----------[test infomation]----------')
 print(test.info())
 ```
 
+<pre>
+train data shape:  (891, 12)
+test data shape:  (418, 11)
+----------[train infomation]----------
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 891 entries, 0 to 890
+Data columns (total 12 columns):
+ #   Column       Non-Null Count  Dtype  
+---  ------       --------------  -----  
+ 0   PassengerId  891 non-null    int64  
+ 1   Survived     891 non-null    int64  
+ 2   Pclass       891 non-null    int64  
+ 3   Name         891 non-null    object 
+ 4   Sex          891 non-null    object 
+ 5   Age          714 non-null    float64
+ 6   SibSp        891 non-null    int64  
+ 7   Parch        891 non-null    int64  
+ 8   Ticket       891 non-null    object 
+ 9   Fare         891 non-null    float64
+ 10  Cabin        204 non-null    object 
+ 11  Embarked     889 non-null    object 
+dtypes: float64(2), int64(5), object(5)
+memory usage: 83.7+ KB
+None
+----------[test infomation]----------
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 418 entries, 0 to 417
+Data columns (total 11 columns):
+ #   Column       Non-Null Count  Dtype  
+---  ------       --------------  -----  
+ 0   PassengerId  418 non-null    int64  
+ 1   Pclass       418 non-null    int64  
+ 2   Name         418 non-null    object 
+ 3   Sex          418 non-null    object 
+ 4   Age          332 non-null    float64
+ 5   SibSp        418 non-null    int64  
+ 6   Parch        418 non-null    int64  
+ 7   Ticket       418 non-null    object 
+ 8   Fare         417 non-null    float64
+ 9   Cabin        91 non-null     object 
+ 10  Embarked     418 non-null    object 
+dtypes: float64(2), int64(4), object(5)
+memory usage: 36.0+ KB
+None
+</pre>
 범주형 특성과 수치형 특성들로 나뉨을 알 수 있다.
 
 
@@ -201,6 +283,12 @@ def pie_chart(feature):
 pie_chart('Sex')
 ```
 
+<pre>
+<Figure size 640x480 with 1 Axes>
+</pre>
+<pre>
+<Figure size 640x480 with 2 Axes>
+</pre>
 위와 같이 남성이 여성보다 배에 많이 탔으며, 남성보다 여성의 생존 비율이 높다는 것을 알 수가 있다.
 
 이제 사회경제적 지위인 `Pclass`에 대해서도 그려보자.
@@ -211,6 +299,12 @@ pie_chart('Sex')
 pie_chart('Pclass')
 ```
 
+<pre>
+<Figure size 640x480 with 1 Axes>
+</pre>
+<pre>
+<Figure size 640x480 with 3 Axes>
+</pre>
 위와 같이 Pclass가 3인 사람들의 수가 가장 많았으면 Pclass가 높을 수록 생존 비율이 높다는 것을 알 수 있다.
 
 마지막으로 어느 곳에서 배를 탔는지를 나타내는 `Embarked`에 대해서 살펴보자.
@@ -221,6 +315,12 @@ pie_chart('Pclass')
 pie_chart('Embarked')
 ```
 
+<pre>
+<Figure size 640x480 with 1 Axes>
+</pre>
+<pre>
+<Figure size 640x480 with 3 Axes>
+</pre>
 위와 같이 Southampton에서 선착한 사람이 가장 많았으며, Cherbourg에서 탄 사람 중에 생존한 사람의 비율이 높았고, 나머지 두 선착장에서 탄 사람들은 생존한 사람보다 그렇지 못한 사람이 조금 더 많았다.
 
 
@@ -248,6 +348,9 @@ def bar_chart(feature):
 bar_chart('SibSp')
 ```
 
+<pre>
+<Figure size 1000x500 with 1 Axes>
+</pre>
 위와 같이 2명 이상의 형제나 배우자와 함께 탔을 경우 생존한 사람의 비율이 컸다는 것을 볼 수 있고, 그렇지 않을 경우에는 생존한 사람의 비율이 적었다는 것을 볼 수 있다.
 
 
@@ -256,6 +359,9 @@ bar_chart('SibSp')
 bar_chart('Parch')
 ```
 
+<pre>
+<Figure size 1000x500 with 1 Axes>
+</pre>
 `Parch`특성은 `SibSp`와 비슷하게 2명 이상의 부모나 자식과 함께 배에 탔을 때는 조금 더 생존했지만, 그렇지 않을 경우에는 생존한 사람의 비율이 적었다.
 
 
@@ -318,6 +424,28 @@ for dataset in train_and_test:
 train.head(5)
 ```
 
+<pre>
+   PassengerId  Survived  Pclass  \
+0            1         0       3   
+1            2         1       1   
+2            3         1       3   
+3            4         1       1   
+4            5         0       3   
+
+                                                Name     Sex   Age  SibSp  \
+0                            Braund, Mr. Owen Harris    male  22.0      1   
+1  Cumings, Mrs. John Bradley (Florence Briggs Th...  female  38.0      1   
+2                             Heikkinen, Miss. Laina  female  26.0      0   
+3       Futrelle, Mrs. Jacques Heath (Lily May Peel)  female  35.0      1   
+4                           Allen, Mr. William Henry    male  35.0      0   
+
+   Parch            Ticket     Fare Cabin Embarked Title  
+0      0         A/5 21171   7.2500   NaN        S    Mr  
+1      0          PC 17599  71.2833   C85        C   Mrs  
+2      0  STON/O2. 3101282   7.9250   NaN        S  Miss  
+3      0            113803  53.1000  C123        S   Mrs  
+4      0            373450   8.0500   NaN        S    Mr  
+</pre>
 위에서 쓰인 ' ([A-Za-z]+)\.'는 정규표현식인데, 공백으로 시작하고, `.`로 끝나는 문자열을 추출할 때 저렇게 표현한다.
 
 
@@ -330,6 +458,27 @@ train.head(5)
 pd.crosstab(train['Title'], train['Sex'])
 ```
 
+<pre>
+Sex       female  male
+Title                 
+Capt           0     1
+Col            0     2
+Countess       1     0
+Don            0     1
+Dr             1     6
+Jonkheer       0     1
+Lady           1     0
+Major          0     2
+Master         0    40
+Miss         182     0
+Mlle           2     0
+Mme            1     0
+Mr             0   517
+Mrs          125     0
+Ms             1     0
+Rev            0     6
+Sir            0     1
+</pre>
 여기서 흔하지 않은 Title은 Other로 대체하고 중복되는 표현을 통일하자.
 
 
@@ -345,6 +494,14 @@ for dataset in train_and_test:
 train[['Title', 'Survived']].groupby(['Title'], as_index=False).mean()
 ```
 
+<pre>
+    Title  Survived
+0  Master  0.575000
+1    Miss  0.702703
+2      Mr  0.156673
+3     Mrs  0.793651
+4   Other  0.347826
+</pre>
 그리고 추출한 Title 데이터를 학습하기 알맞게 String Data로 변형해주면 된다.
 
 
@@ -381,6 +538,22 @@ for dataset in train_and_test:
 train.isnull().sum()
 ```
 
+<pre>
+PassengerId      0
+Survived         0
+Pclass           0
+Name             0
+Sex              0
+Age            177
+SibSp            0
+Parch            0
+Ticket           0
+Fare             0
+Cabin          687
+Embarked         2
+Title            0
+dtype: int64
+</pre>
 `Embarked` 특성에 2개의 결측치를 확인할 수 있다.
 
 
@@ -440,6 +613,14 @@ for dataset in train_and_test:
 print (train[['AgeBand', 'Survived']].groupby(['AgeBand'], as_index=False).mean()) # Survivied ratio about Age Band
 ```
 
+<pre>
+         AgeBand  Survived
+0  (-0.08, 16.0]  0.550000
+1   (16.0, 32.0]  0.344762
+2   (32.0, 48.0]  0.403226
+3   (48.0, 64.0]  0.434783
+4   (64.0, 80.0]  0.090909
+</pre>
 이제 `Age`에 들어 있는 값을 위에서 구한 구간에 속하도록 바꿔준다.
 
 
@@ -474,6 +655,15 @@ print("")
 print(test[test["Fare"].isnull()]["Pclass"])
 ```
 
+<pre>
+   Pclass       Fare
+0       1  84.154687
+1       2  20.662183
+2       3  13.675550
+
+152    3
+Name: Pclass, dtype: int64
+</pre>
 위에서 볼 수 있듯이 누락된 데이터의 Pclass는 3이고, train 데이터에서 Pclass가 3인 사람들의 평균 Fare가 13.675550이므로 이 값을 넣어주자.
 
 
@@ -527,6 +717,20 @@ print(train.head())
 print(test.head())
 ```
 
+<pre>
+   Survived  Pclass     Sex     Age  Fare Embarked Title  Family
+0         0       3    male   Young     0        S    Mr       1
+1         1       1  female  Middle     4        C   Mrs       1
+2         1       3  female   Young     1        S  Miss       0
+3         1       1  female  Middle     4        S   Mrs       1
+4         0       3    male  Middle     1        S    Mr       0
+   PassengerId  Pclass     Sex     Age  Fare Embarked Title  Family
+0          892       3    male  Middle     0        Q    Mr       0
+1          893       3  female  Middle     0        S   Mrs       1
+2          894       2    male   Prime     1        Q    Mr       0
+3          895       3    male   Young     1        S    Mr       0
+4          896       3  female   Young     2        S   Mrs       2
+</pre>
 위와 같이 가공된 train, test 데이터를 볼 수 있다.
 
 
@@ -623,6 +827,13 @@ rf_pred = train_and_test(RandomForestClassifier(n_estimators=100))
 nb_pred = train_and_test(GaussianNB())
 ```
 
+<pre>
+Accuracy :  82.72 %
+Accuracy :  83.5 %
+Accuracy :  84.51 %
+Accuracy :  88.55 %
+Accuracy :  79.8 %
+</pre>
 # 6. 마무리
 
 
