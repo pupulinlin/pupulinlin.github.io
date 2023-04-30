@@ -1,4 +1,6 @@
+
 <style> table.dataframe { white-space: normal; width: 100%; height: 240px; display: block; overflow: auto; font-family: Arial, sans-serif; font-size: 0.9rem; line-height: 20px; text-align: center; border: 0px !important; }
+  
 table.dataframe th {
   text-align: center;
   font-weight: bold;
@@ -30,6 +32,7 @@ table.dataframe tr:hover {
   word-break: normal;
   white-space: pre;
 }
+  
 .dataframe tbody tr th:only-of-type { vertical-align: middle; }
 
 .dataframe tbody tr th { vertical-align: top; }
